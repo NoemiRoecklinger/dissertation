@@ -1,5 +1,5 @@
-# dissertation
-dissertation folder contianing data, script files and stored data files 
+# Dissertation
+Dissertation folder contianing data, script files and stored data files 
 
 # Scripts used for my dissertation and learning progress
 
