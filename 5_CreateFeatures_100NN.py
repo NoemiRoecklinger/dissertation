@@ -2,10 +2,10 @@
 # coding: utf-8
 
 # # This is my file to create all features for the ML process
-# 
-# I have my cleaned file with revised classes (1-11): Dataset_for_ML 
-# 
-# Now I take that and calculate all the other features for it 
+#
+# I have my cleaned file with revised classes (1-11): Dataset_for_ML
+#
+# Now I take that and calculate all the other features for it
 
 # In[1]:
 
@@ -13,9 +13,10 @@
 import pandas as pd
 import os
 import numpy as np
-import sklearn 
+import sklearn
 import scipy.linalg as scplinag
 from sklearn.neighbors import KDTree
+import time
 
 
 # In[2]:
@@ -24,8 +25,8 @@ from sklearn.neighbors import KDTree
 def calcCovarianceMatrix(data):
     """
     Function to compute the covariance matrix.
-    
-    Input: Dataset of 3D points; i.e. array of dimension: #points x 3 
+
+    Input: Dataset of 3D points; i.e. array of dimension: #points x 3
     Output: 3x3 covariance matrix (np.array)
     """
     # Create covariance matrix and array to store the mean values for x_mean, y_mean, z_mean
@@ -35,7 +36,7 @@ def calcCovarianceMatrix(data):
     for i in range(0, data.shape[1]):
         mean_xyz.append(data[:,i].mean())
     mean_xyz = np.array(mean_xyz)
-    # Check whether dimensions agree 
+    # Check whether dimensions agree
     if data[:,0].size != data[:,1].size or data[:,0].size != data[:,2].size:
         print "X, Y and Z must be of same dimensions."
     else:
@@ -48,9 +49,9 @@ def calcCovarianceMatrix(data):
                 for point in data:
                     # For each point, access x,y and z in all combinations (xx, xy, xz, yx, yy, yz etc)
                     C[i][j] = C[i][j] + (point[i]-mean_xyz[i])*(point[j]-mean_xyz[j])
-    # Divide by the total number of points                
+    # Divide by the total number of points
     C = (1.0/data.shape[0]) * C
-    return C 
+    return C
 
 
 # In[3]:
@@ -61,11 +62,11 @@ def calcCovarianceMatrix(data):
 def calcFeatureDescr(covarianceMatrix):
     """
     Function to compute the 8 feature descriptors for each point.
-    
-    Input: 3x3 Covariance matrix of a point and its neighbourhood 
-    
+
+    Input: 3x3 Covariance matrix of a point and its neighbourhood
+
     Output: np Array with feature descriptors as described by Weinmann et al. (1D array with 8 elements)
-    
+
     """
     D, V = scplinag.eigh(covarianceMatrix)
     # We sort the array with eigenvalues by size (from smallest to largest value)
@@ -93,12 +94,12 @@ def calcFeatureDescr(covarianceMatrix):
     s = 0
     for elem in D:
         s = s + (elem*np.log(elem))
-    lambda6 = (-1)*s  
+    lambda6 = (-1)*s
     # Sum of eigenvalues
     lambda7 = sum(D)
     # Change of curvature
-    lambda8 = evalue3/sum(D) 
-    
+    lambda8 = evalue3/sum(D)
+
     featureDescriptor = np.array([lambda1, lambda2, lambda3, lambda4, lambda5, lambda6, lambda7, lambda8])
     return featureDescriptor
 
@@ -106,20 +107,20 @@ def calcFeatureDescr(covarianceMatrix):
 # In[4]:
 
 
-# Define a data frame with all my data# Define  
+# Define a data frame with all my data# Define
 FILE_PATH = r"../DATA"
 FILE_NAME = r"/Dataset_for_ML_verticality.txt"
 IMAGE_FILE_PATH = r"images"
 df = pd.read_csv(FILE_PATH+FILE_NAME, delimiter=',')
 
 
-# ## Convert to NumPy array 
-# 
+# ## Convert to NumPy array
+#
 
 # In[5]:
 
 
-# Data is the whole dataset but as a numpy array 
+# Data is the whole dataset but as a numpy array
 data = df.values
 rows, columns = data.shape
 print "Number of rows:", rows
@@ -134,17 +135,22 @@ dataxyz = data[:,0:3]
 
 
 # ## Compute all features
-# 
-# 
+#
+#
 
 # In[ ]:
 
 
-# For all points now 
+# For all points now
 # Create kd-tree
+start = time.time()
 kdt = KDTree(dataxyz, leaf_size=40, metric='euclidean')
+print 'Created tree in:', float(time.time()-start)/60, 'minutes'
+start = time.time()
 # Get list with indices, the first value is always the point itself
 idx_list = kdt.query(dataxyz, k=100, return_distance=False)
+print 'Queried tree in:', float(time.time()-start)/60, 'minutes'
+start = time.time()
 store = []
 for j in range(0, dataxyz.shape[0]):
     # Look at all points now
@@ -159,9 +165,10 @@ for j in range(0, dataxyz.shape[0]):
     store.append(row_with_additional_col)
 store = np.array(store)
 print "This is the shape of the file:", store.shape
+print 'Created features in:', float(time.time()-start)/60, 'minutes'
 
 
-# Create a data frame with the calculated features 
+# Create a data frame with the calculated features
 df2 = pd.DataFrame({
     'X': store[:,0],
     'Y': store[:,1],
@@ -179,4 +186,3 @@ df2 = pd.DataFrame({
     'class': df['class']
 })
 df2.to_csv(FILE_PATH+'/5_Data_ML_attributes_100NN.txt', index= False)
-
