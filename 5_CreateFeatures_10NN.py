@@ -7,7 +7,7 @@
 # 
 # Now I take that and calculate all the other features for it 
 
-# In[1]:
+# In[3]:
 
 
 import pandas as pd
@@ -20,7 +20,7 @@ import time
 from scipy.spatial import distance
 
 
-# In[2]:
+# In[4]:
 
 
 def calcCovarianceMatrix(data):
@@ -55,7 +55,7 @@ def calcCovarianceMatrix(data):
     return C 
 
 
-# In[37]:
+# In[5]:
 
 
 # Get eight parameters for each point
@@ -117,7 +117,7 @@ def calcFeatureDescr(covarianceMatrix):
     return featureDescriptor, count
 
 
-# In[4]:
+# In[6]:
 
 
 # Get local point density
@@ -139,7 +139,7 @@ def calcPointDensity(number_NN, radius):
     return D
 
 
-# In[5]:
+# In[7]:
 
 
 # Define a data frame with all my data# Define  
@@ -152,7 +152,7 @@ df = pd.read_csv(FILE_PATH+FILE_NAME, delimiter=',')
 # ## Convert to NumPy array 
 # 
 
-# In[6]:
+# In[8]:
 
 
 # Data is the whole dataset but as a numpy array 
@@ -162,7 +162,7 @@ print "Number of rows:", rows
 print "Number of columns", columns
 
 
-# In[29]:
+# In[9]:
 
 
 # Get only XYZ values
@@ -173,7 +173,7 @@ dataxyz = data[:,0:3]
 # 
 # 
 
-# In[38]:
+# In[23]:
 
 
 NN = 10
@@ -213,14 +213,15 @@ for j in range(0, dataxyz.shape[0]):
     counter.append(count)
     row_with_additional_col = np.append(dataxyz[j], feat)
     store.append(row_with_additional_col)
-store = np.array(store)
+store_complex = np.array(store)
+store = np.real(store_complex)
 print "This is the shape of the file:", store.shape
 print 'Computed features in:', float(time.time()-start)/60, 'minutes'
 c = 0
 for elem in counter:
     if elem == 1:
         c = c + 1
-print "This is how many elements (eigenvalues) are 0", c
+print "This is how many elements (eigenvalues) are 0:", c
 
 # Create a data frame with the calculated features 
 df2 = pd.DataFrame({
